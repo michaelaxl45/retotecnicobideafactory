@@ -1,0 +1,78 @@
+version: '3.7'
+
+services:
+  eureka-server:
+    ports:
+      - '8761:8761'
+    container_name: eureka-server
+    networks:
+      - booking-network
+  dbdiscount:
+    container_name: dbdiscount
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ms_discount
+    restart: always
+    ports:
+      - "5441:5432"
+    volumes:
+      - discount_data:/var/lib/postgresql/data/
+    networks:
+      - booking-network
+  dbbook:
+    container_name: dbbook
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ms_book
+    restart: always
+    ports:
+      - "5440:5432"
+    volumes:
+      - book_data:/var/lib/postgresql/data/
+    networks:
+      - booking-network
+
+  pgadmin:
+    container_name: ms-pg-admin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=michaelaxl45@hotmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    restart: always
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/root/.pgadmin
+    networks:
+      - booking-network
+
+  discount:
+    ports:
+      - "8002:8002"
+    container_name: discount
+    networks:
+      - booking-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://dbdiscount:5432/ms_discount
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    links:
+      - dbdiscount
+  booking:
+    ports:
+      - "8001:8001"
+    container_name: booking
+    networks:
+      - booking-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://dbbook:5432/ms_book
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    links:
+      - dbbook
+networks:
+  booking-network:

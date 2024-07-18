@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  eureka-server:
+    build:
+      context: ../eureka-server
+      dockerfile: Dockerfile
+  discount:
+    build:
+      context: ../discount/
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+      - dbdiscount
+  dbdiscount:
+    image: postgres
+  dbbook:
+    image: postgres
+  pgadmin:
+    image: dpage/pgadmin4
+  booking:
+    build:
+      context: ../booking
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+      - dbbook
+      - discount
+volumes:
+  book_data:
+  discount_data:
+  pgadmin_data:
+
+
+
+
